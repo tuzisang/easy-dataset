@@ -87,13 +87,15 @@ Easy Dataset is an application specifically designed for building large language
 - **Dataset Square**: Discover and explore public dataset resources
 - **Desktop Clients**: Available for Windows, macOS, and Linux
 
-### 🔐 User Authentication & Access Control
+### 🔐 User Authentication & Access Control (Web Only)
+
+> **Note**: RBAC authentication is only available when running as a web server. The Electron desktop client runs in single-user mode with `AUTH_ENABLED=false`, which bypasses all authentication.
 
 - **Multi-User System**: Built-in user registration, login, and JWT-based session management
 - **Role-Based Access Control (RBAC)**: Three project-level roles — **Owner** (full control), **Editor** (read & write), **Viewer** (read-only)
 - **Admin Dashboard**: System administrators can manage all users, change system roles, and assign project access per user
 - **Project Member Management**: Project owners can add/remove members and assign roles at `/projects/[id]/members`
-- **Desktop Mode Compatible**: Electron desktop app sets `AUTH_ENABLED=false` to bypass authentication automatically for single-user scenarios
+- **Initial Setup**: First-time web deployment prompts for admin account creation at `/setup`
 - **API Protection**: All project API routes enforce role-based authorization; unauthorized requests return 401/403
 
 ## Quick Demo
@@ -171,7 +173,7 @@ https://github.com/user-attachments/assets/6ddb1225-3d1b-4695-90cd-aa4cb01376a8
    npm run start
 ```
 
-4. Open your browser and visit `http://localhost:1717`
+4. Open your browser and visit `http://localhost:3000`
 
 ### Using the Official Docker Image
 
@@ -190,7 +192,7 @@ services:
     image: ghcr.io/conardli/easy-dataset
     container_name: easy-dataset
     ports:
-      - '1717:1717'
+      - '3000:3000'
     volumes:
       - ./local-db:/app/local-db
       - ./prisma:/app/prisma
@@ -207,7 +209,7 @@ services:
 docker-compose up -d
 ```
 
-4. Open a browser and visit `http://localhost:1717`
+4. Open a browser and visit `http://localhost:3000`
 
 ### Building with a Local Dockerfile
 
@@ -230,7 +232,7 @@ docker build -t easy-dataset .
 
 ```bash
 docker run -d \
-  -p 1717:1717 \
+  -p 3000:3000 \
   -v ./local-db:/app/local-db \
   -v ./prisma:/app/prisma \
   --name easy-dataset \
@@ -241,7 +243,7 @@ docker run -d \
 
 > **Note:** The database file will be automatically initialized on first startup, no need to manually run `npm run db:push`.
 
-4. Open a browser and visit `http://localhost:1717`
+4. Open a browser and visit `http://localhost:3000`
 
 ## Documentation
 

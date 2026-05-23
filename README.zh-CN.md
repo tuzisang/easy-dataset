@@ -87,13 +87,15 @@ Easy Dataset 是一个专为创建大型语言模型数据集而设计的应用�
 - **数据集广场**：发现和探索各种公开数据集资源
 - **桌面客户端**：提供 Windows、macOS、Linux 桌面应用
 
-### 🔐 用户认证与权限控制
+### 🔐 用户认证与权限控制（仅 Web 端）
+
+> **注意**：RBAC 权限功能仅在 Web 服务器模式下可用。Electron 桌面客户端以 `AUTH_ENABLED=false` 运行在单用户模式，跳过所有认证。
 
 - **多用户系统**：内置用户注册、登录和基于 JWT 的会话管理
 - **角色权限控制（RBAC）**：三级项目角色 — **所有者**（完全控制）、**编辑者**（读写）、**查看者**（只读）
 - **管理员面板**：系统管理员可管理所有用户、更改系统角色、分配用户的项目访问权限
 - **项目成员管理**：项目所有者可在 `/projects/[id]/members` 添加/移除成员并分配角色
-- **桌面模式兼容**：Electron 桌面端设置 `AUTH_ENABLED=false` 自动跳过认证，适配单人使用场景
+- **首次初始化**：首次 Web 部署时引导创建管理员账号（`/setup`）
 - **API 安全保护**：所有项目 API 路由强制执行角色鉴权，未授权请求返回 401/403
 
 ## 快速演示
@@ -171,7 +173,7 @@ https://github.com/user-attachments/assets/6ddb1225-3d1b-4695-90cd-aa4cb01376a8
    npm run start
 ```
 
-4. 打开浏览器并访问 `http://localhost:1717`
+4. 打开浏览器并访问 `http://localhost:3000`
 
 ### 使用官方 Docker 镜像
 
@@ -190,7 +192,7 @@ services:
     image: ghcr.io/conardli/easy-dataset
     container_name: easy-dataset
     ports:
-      - '1717:1717'
+      - '3000:3000'
     volumes:
       - ./local-db:/app/local-db
       - ./prisma:/app/prisma
@@ -207,7 +209,7 @@ services:
 docker-compose up -d
 ```
 
-4. 打开浏览器并访问 `http://localhost:1717`
+4. 打开浏览器并访问 `http://localhost:3000`
 
 ### 使用本地 Dockerfile 构建
 
@@ -230,7 +232,7 @@ docker build -t easy-dataset .
 
 ```bash
 docker run -d \
-  -p 1717:1717 \
+  -p 3000:3000 \
   -v ./local-db:/app/local-db \
   -v ./prisma:/app/prisma \
   --name easy-dataset \
@@ -241,7 +243,7 @@ docker run -d \
 
 > **注意：** 数据库文件会在首次启动时自动初始化，无需手动执行 `npm run db:push`。
 
-4. 打开浏览器，访问 `http://localhost:1717`
+4. 打开浏览器，访问 `http://localhost:3000`
 
 ## 文档
 
