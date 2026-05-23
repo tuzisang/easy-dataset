@@ -23,9 +23,15 @@ import {
   DialogContentText,
   DialogActions,
   Button,
-  Chip
+  Chip,
+  TextField,
+  FormControl,
+  InputLabel,
+  Snackbar,
+  Tooltip
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { motion } from 'framer-motion';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +43,12 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [projectDialogUser, setProjectDialogUser] = useState(null);
+  const [projectList, setProjectList] = useState([]);
+  const [projectLoading, setProjectLoading] = useState(false);
+  const [projectSearch, setProjectSearch] = useState('');
+  const [projectSaving, setProjectSaving] = useState(false);
+  const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 
   useEffect(() => {
     if (authLoading) return;
@@ -94,6 +106,56 @@ export default function AdminPage() {
       setDeleteTarget(null);
     }
   }
+
+  async function openProjectDialog(targetUser) {
+    setProjectDialogUser(targetUser);
+    setProjectSearch('');
+    setProjectLoading(true);
+    try {
+      const res = await fetch(`/api/admin/users/${targetUser.id}/projects`);
+      if (!res.ok) throw new Error('Failed to fetch projects');
+      const data = await res.json();
+      setProjectList(data.projects);
+    } catch (err) {
+      setSnackbar({ open: true, message: err.message, severity: 'error' });
+      setProjectDialogUser(null);
+    } finally {
+      setProjectLoading(false);
+    }
+  }
+
+  function handleProjectRoleChange(projectId, newRole) {
+    setProjectList(prev => prev.map(p => (p.id === projectId ? { ...p, role: newRole || null } : p)));
+  }
+
+  async function handleSaveProjects() {
+    setProjectSaving(true);
+    const items = projectList.filter(p => p.role).map(p => ({ projectId: p.id, role: p.role }));
+    try {
+      const res = await fetch(`/api/admin/users/${projectDialogUser.id}/projects`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ items })
+      });
+      if (!res.ok) {
+        const errData = await res.json();
+        throw new Error(errData.error || 'Failed to update');
+      }
+      setSnackbar({ open: true, message: t('admin.projectAccessSaved'), severity: 'success' });
+      setProjectDialogUser(null);
+    } catch (err) {
+      setSnackbar({ open: true, message: err.message, severity: 'error' });
+    } finally {
+      setProjectSaving(false);
+    }
+  }
+
+  function closeProjectDialog() {
+    setProjectDialogUser(null);
+    setProjectList([]);
+  }
+
+  const filteredProjects = projectList.filter(p => p.name.toLowerCase().includes(projectSearch.toLowerCase()));
 
   if (authLoading || loading) {
     return (
@@ -156,6 +218,11 @@ export default function AdminPage() {
                   <TableCell>{u.projectCount}</TableCell>
                   <TableCell>{new Date(u.createAt).toLocaleDateString()}</TableCell>
                   <TableCell align="right">
+                    <Tooltip title={t('admin.manageProjects')}>
+                      <IconButton onClick={() => openProjectDialog(u)}>
+                        <SettingsIcon />
+                      </IconButton>
+                    </Tooltip>
                     <IconButton color="error" onClick={() => setDeleteTarget(u)} disabled={u.id === user?.id}>
                       <DeleteIcon />
                     </IconButton>
@@ -186,6 +253,92 @@ export default function AdminPage() {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Dialog
+        open={!!projectDialogUser}
+        onClose={projectSaving ? undefined : closeProjectDialog}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>{t('admin.projectAccess', { username: projectDialogUser?.username })}</DialogTitle>
+        <DialogContent>
+          {projectLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : (
+            <>
+              <TextField
+                fullWidth
+                size="small"
+                placeholder={t('admin.searchProjects')}
+                value={projectSearch}
+                onChange={e => setProjectSearch(e.target.value)}
+                sx={{ mb: 2, mt: 1 }}
+              />
+              <Box sx={{ maxHeight: 360, overflow: 'auto' }}>
+                {filteredProjects.map(p => (
+                  <Box
+                    key={p.id}
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      py: 1,
+                      borderBottom: '1px solid',
+                      borderColor: 'divider'
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ flex: 1, mr: 2 }}>
+                      {p.name}
+                    </Typography>
+                    <FormControl size="small" sx={{ minWidth: 120 }}>
+                      <InputLabel>{t('admin.tableRole')}</InputLabel>
+                      <Select
+                        value={p.role || ''}
+                        label={t('admin.tableRole')}
+                        onChange={e => handleProjectRoleChange(p.id, e.target.value)}
+                      >
+                        <MenuItem value="">{t('admin.noAccess')}</MenuItem>
+                        <MenuItem value="owner">{t('members.roleOwner')}</MenuItem>
+                        <MenuItem value="editor">{t('members.roleEditor')}</MenuItem>
+                        <MenuItem value="viewer">{t('members.roleViewer')}</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Box>
+                ))}
+                {filteredProjects.length === 0 && (
+                  <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+                    {projectSearch ? t('admin.noMatchingProjects') : t('admin.noUsers')}
+                  </Typography>
+                )}
+              </Box>
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeProjectDialog}>{t('common.cancel')}</Button>
+          <Button onClick={handleSaveProjects} variant="contained" disabled={projectLoading || projectSaving}>
+            {projectSaving ? <CircularProgress size={20} color="inherit" /> : t('admin.saveChanges')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={4000}
+        onClose={() => setSnackbar(s => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setSnackbar(s => ({ ...s, open: false }))}
+          severity={snackbar.severity}
+          variant="filled"
+          sx={{ width: '100%' }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Container>
   );
 }

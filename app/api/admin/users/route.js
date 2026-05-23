@@ -1,13 +1,6 @@
 import { db } from '@/lib/db';
-import { getUserById, getUserRole, updateUserRoleSchema, deleteUserSchema } from '@/lib/auth';
+import { requireAdmin, updateUserRoleSchema, deleteUserSchema } from '@/lib/auth';
 import { NextResponse } from 'next/server';
-
-async function requireAdmin(request) {
-  const userId = request.headers.get('x-user-id');
-  if (!userId) return false;
-  const user = await getUserById(userId);
-  return user && user.role === 'admin';
-}
 
 // GET — list all users with project counts (admin only)
 export async function GET(request) {

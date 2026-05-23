@@ -1962,7 +1962,14 @@
     "deleteConfirm": "Delete",
     "fetchUsersError": "Failed to fetch users",
     "updateRoleError": "Failed to update role",
-    "deleteUserError": "Failed to delete user"
+    "deleteUserError": "Failed to delete user",
+    "manageProjects": "Manage Projects",
+    "projectAccess": "Project Access — {username}",
+    "searchProjects": "Search projects…",
+    "noAccess": "No access",
+    "saveChanges": "Save Changes",
+    "projectAccessSaved": "Project access updated",
+    "noMatchingProjects": "No matching projects"
   },
   "members": {
     "title": "Project Members",

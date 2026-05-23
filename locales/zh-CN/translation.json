@@ -1916,7 +1916,14 @@
     "deleteConfirm": "删除",
     "fetchUsersError": "获取用户列表失败",
     "updateRoleError": "更新角色失败",
-    "deleteUserError": "删除用户失败"
+    "deleteUserError": "删除用户失败",
+    "manageProjects": "管理项目",
+    "projectAccess": "项目权限 — {username}",
+    "searchProjects": "搜索项目…",
+    "noAccess": "无权限",
+    "saveChanges": "保存更改",
+    "projectAccessSaved": "项目权限已更新",
+    "noMatchingProjects": "无匹配项目"
   },
   "members": {
     "title": "项目成员",
