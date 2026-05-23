@@ -87,6 +87,15 @@ Easy Dataset is an application specifically designed for building large language
 - **Dataset Square**: Discover and explore public dataset resources
 - **Desktop Clients**: Available for Windows, macOS, and Linux
 
+### 🔐 User Authentication & Access Control
+
+- **Multi-User System**: Built-in user registration, login, and JWT-based session management
+- **Role-Based Access Control (RBAC)**: Three project-level roles — **Owner** (full control), **Editor** (read & write), **Viewer** (read-only)
+- **Admin Dashboard**: System administrators can manage all users, change system roles, and assign project access per user
+- **Project Member Management**: Project owners can add/remove members and assign roles at `/projects/[id]/members`
+- **Desktop Mode Compatible**: Electron desktop app sets `AUTH_ENABLED=false` to bypass authentication automatically for single-user scenarios
+- **API Protection**: All project API routes enforce role-based authorization; unauthorized requests return 401/403
+
 ## Quick Demo
 
 https://github.com/user-attachments/assets/6ddb1225-3d1b-4695-90cd-aa4cb01376a8
