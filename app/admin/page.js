@@ -260,7 +260,7 @@ export default function AdminPage() {
         maxWidth="sm"
         fullWidth
       >
-        <DialogTitle>{t('admin.projectAccess', { username: projectDialogUser?.username })}</DialogTitle>
+        <DialogTitle>{t('admin.projectAccess', { username: projectDialogUser?.username || '' })}</DialogTitle>
         <DialogContent>
           {projectLoading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
