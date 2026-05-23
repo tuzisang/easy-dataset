@@ -62,6 +62,7 @@ export default function ProjectCard({ project, onDeleteClick }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const [processingId, setProcessingId] = useState(false);
+  const canDelete = project.userRole === 'owner' || project.userRole === 'admin';
 
   // 菜单状态
   const [anchorEl, setAnchorEl] = useState(null);
@@ -240,12 +241,14 @@ export default function ProjectCard({ project, onDeleteClick }) {
 
         <Divider sx={{ my: 0.5, opacity: 0.5 }} />
 
-        <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
-          <ListItemIcon>
-            <DeleteIcon fontSize="small" color="error" />
-          </ListItemIcon>
-          <Typography variant="body2">{t('common.delete')}</Typography>
-        </MenuItem>
+        {canDelete && (
+          <MenuItem onClick={handleDeleteClick} sx={{ color: 'error.main' }}>
+            <ListItemIcon>
+              <DeleteIcon fontSize="small" color="error" />
+            </ListItemIcon>
+            <Typography variant="body2">{t('common.delete')}</Typography>
+          </MenuItem>
+        )}
       </Menu>
     </Card>
   );
