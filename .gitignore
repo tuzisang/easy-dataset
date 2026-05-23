@@ -21,3 +21,6 @@ prisma/local-db/db.sqlite
 .trae
 opencode.json
 merge-translations.js
+.gitnexus
+.mcp.json
+$USERPROFILE/
