@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * Get current question info (including random swap info)
@@ -8,6 +9,9 @@ export async function GET(request, { params }) {
   const { projectId, taskId } = params;
 
   try {
+    const { projectId } = params;
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     if (!projectId || !taskId) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }

@@ -3,11 +3,15 @@ import { getImageDatasetById, updateImageDataset, deleteImageDataset } from '@/l
 import { getProjectPath } from '@/lib/db/base';
 import fs from 'fs/promises';
 import path from 'path';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 获取单个数据集详情
 export async function GET(request, { params }) {
   try {
     const { projectId, datasetId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     const dataset = await getImageDatasetById(datasetId);
 
@@ -48,6 +52,9 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const { projectId, datasetId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const updates = await request.json();
 
     // 验证数据集存在且属于该项目
@@ -92,6 +99,9 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { projectId, datasetId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证数据集存在且属于该项目
     const dataset = await getImageDatasetById(datasetId);

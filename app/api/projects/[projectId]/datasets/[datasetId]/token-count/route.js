@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getDatasetsById } from '@/lib/db/datasets';
 import { getEncoding } from '@langchain/core/utils/tiktoken';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * 异步计算数据集文本的Token数量
@@ -8,6 +9,9 @@ import { getEncoding } from '@langchain/core/utils/tiktoken';
 export async function GET(request, { params }) {
   try {
     const { projectId, datasetId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     if (!datasetId) {
       return NextResponse.json({ error: '数据集ID不能为空' }, { status: 400 });

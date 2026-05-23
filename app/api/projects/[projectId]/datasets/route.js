@@ -7,6 +7,7 @@ import {
   updateDataset
 } from '@/lib/db/datasets';
 import datasetService from '@/lib/services/datasets';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 优化思维链函数已移至服务层
 
@@ -16,6 +17,10 @@ import datasetService from '@/lib/services/datasets';
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
+
     const { questionId, model, language } = await request.json();
 
     // 使用数据集生成服务
@@ -42,6 +47,10 @@ export async function POST(request, { params }) {
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
+
     const { searchParams } = new URL(request.url);
     // 验证项目ID
     if (!projectId) {
@@ -111,8 +120,13 @@ export async function GET(request, { params }) {
 /**
  * 删除数据集
  */
-export async function DELETE(request) {
+export async function DELETE(request, { params }) {
   try {
+    const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
+
     const { searchParams } = new URL(request.url);
     const datasetId = searchParams.get('id');
     if (!datasetId) {
@@ -144,8 +158,13 @@ export async function DELETE(request) {
 /**
  * 编辑数据集
  */
-export async function PATCH(request) {
+export async function PATCH(request, { params }) {
   try {
+    const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
+
     const { searchParams } = new URL(request.url);
     const datasetId = searchParams.get('id');
     const { answer, cot, question, confirmed } = await request.json();

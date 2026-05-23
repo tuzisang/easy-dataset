@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getDatasetsById, getDatasetsCounts, getNavigationItems, updateDatasetMetadata } from '@/lib/db/datasets';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * 获取项目的所有数据集
@@ -7,6 +8,9 @@ import { getDatasetsById, getDatasetsCounts, getNavigationItems, updateDatasetMe
 export async function GET(request, { params }) {
   try {
     const { projectId, datasetId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     // 验证项目ID
     if (!projectId) {
       return NextResponse.json({ error: '项目ID不能为空' }, { status: 400 });
@@ -56,6 +60,9 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   try {
     const { projectId, datasetId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证参数
     if (!projectId) {

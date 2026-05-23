@@ -3,6 +3,7 @@ import { createInitModelConfig, getModelConfigByProjectId, saveModelConfig } fro
 import { DEFAULT_MODEL_SETTINGS, MODEL_PROVIDERS } from '@/constant/model';
 import { getProject } from '@/lib/db/projects';
 import { sortProvidersByPriority } from '@/lib/util/providerLogo';
+import { requireProjectAccess } from '@/lib/auth';
 
 function normalizeModelEndpoint(endpoint = '') {
   let normalizedEndpoint = String(endpoint).trim();
@@ -19,6 +20,9 @@ function normalizeModelEndpoint(endpoint = '') {
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     // 验证项目 ID
     if (!projectId) {
       return NextResponse.json({ error: 'The project ID cannot be empty' }, { status: 400 });
@@ -60,6 +64,9 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证项目 ID
     if (!projectId) {

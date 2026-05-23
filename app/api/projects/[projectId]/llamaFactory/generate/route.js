@@ -3,10 +3,14 @@ import path from 'path';
 import fs from 'fs';
 import { getProjectRoot } from '@/lib/db/base';
 import { getDatasets } from '@/lib/db/datasets';
+import { requireProjectAccess } from '@/lib/auth';
 
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { formatType, systemPrompt, confirmedOnly, includeCOT, reasoningLanguage } = await request.json();
 
     if (!projectId) {

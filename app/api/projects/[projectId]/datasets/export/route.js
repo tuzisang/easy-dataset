@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireProjectAccess } from '@/lib/auth';
 import {
   getDatasets,
   getBalancedDatasetsByTags,
@@ -15,6 +16,9 @@ import {
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
 
     // 验证项目ID
@@ -45,6 +49,9 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const body = await request.json();
 
     // 验证项目ID

@@ -5,11 +5,15 @@ import { getChunkById } from '@/lib/db/chunks';
 import LLMClient from '@/lib/llm/core/index';
 import { getNewAnswerPrompt } from '@/lib/llm/prompts/newAnswer';
 import { extractJsonFromLLMOutput } from '@/lib/llm/common/util';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 优化数据集答案
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证项目ID
     if (!projectId) {

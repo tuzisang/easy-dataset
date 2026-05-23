@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getImageDetailWithQuestions } from '@/lib/services/images';
+import { requireProjectAccess } from '@/lib/auth';
 
 const prisma = new PrismaClient();
 
@@ -8,6 +9,9 @@ const prisma = new PrismaClient();
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 查找第一个有未标注问题的图片
     const unansweredQuestion = await prisma.questions.findFirst({

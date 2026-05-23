@@ -5,11 +5,15 @@ import { db } from '@/lib/db/index';
 import { importImagesFromDirectories } from '@/lib/services/images';
 import fs from 'fs/promises';
 import path from 'path';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 获取图片列表
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get('page')) || 1;
@@ -32,6 +36,9 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { directories } = await request.json();
 
     // 调用服务层处理图片导入
@@ -48,6 +55,9 @@ export async function POST(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
     const imageId = searchParams.get('imageId');
 

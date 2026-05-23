@@ -5,6 +5,7 @@
 
 import { NextResponse } from 'next/server';
 import { getAllDatasetConversations } from '@/lib/db/dataset-conversations';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * 导出多轮对话数据集
@@ -12,6 +13,9 @@ import { getAllDatasetConversations } from '@/lib/db/dataset-conversations';
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
 
     // 筛选条件

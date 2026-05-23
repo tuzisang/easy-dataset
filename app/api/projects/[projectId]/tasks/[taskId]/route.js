@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { requireProjectAccess } from '@/lib/auth';
 
 const prisma = new PrismaClient();
 
@@ -7,6 +8,9 @@ const prisma = new PrismaClient();
 export async function GET(request, { params }) {
   try {
     const { projectId, taskId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证必填参数
     if (!projectId || !taskId) {
@@ -59,6 +63,9 @@ export async function GET(request, { params }) {
 export async function PATCH(request, { params }) {
   try {
     const { projectId, taskId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const data = await request.json();
 
     // 验证必填参数
@@ -133,6 +140,9 @@ export async function PATCH(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { projectId, taskId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证必填参数
     if (!projectId || !taskId) {

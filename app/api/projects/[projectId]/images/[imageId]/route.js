@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getImageDetailWithQuestions } from '@/lib/services/images';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 根据图片ID获取图片详情，包含问题列表和已标注数据
 export async function GET(request, { params }) {
   try {
     const { projectId, imageId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 调用服务层获取图片详情
     const imageData = await getImageDetailWithQuestions(projectId, imageId);

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 import { getImageById, getImageChunk } from '@/lib/db/images';
 import { createImageDataset } from '@/lib/db/imageDatasets';
+import { requireProjectAccess } from '@/lib/auth';
 
 const prisma = new PrismaClient();
 
@@ -9,6 +10,9 @@ const prisma = new PrismaClient();
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { imageId, questionId, question, answerType, answer, note } = await request.json();
 
     // 验证必填字段

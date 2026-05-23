@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getQuestionsForTree, getQuestionsByTag } from '@/lib/db/questions';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * 获取项目的问题树形视图数据
@@ -10,6 +11,9 @@ import { getQuestionsForTree, getQuestionsByTag } from '@/lib/db/questions';
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证项目ID
     if (!projectId) {

@@ -1,8 +1,12 @@
 import { NextResponse } from 'next/server';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 获取默认提示词内容
 export async function GET(request, { params }) {
   try {
+    const { projectId } = params;
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
     const promptType = searchParams.get('promptType');
     const promptKey = searchParams.get('promptKey');

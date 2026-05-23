@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * Submit vote result
@@ -9,6 +10,9 @@ import { db } from '@/lib/db/index';
 export async function POST(request, { params }) {
   try {
     const { projectId, taskId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { vote, questionId, isSwapped, leftAnswer, rightAnswer } = await request.json();
 
     // Validate vote option

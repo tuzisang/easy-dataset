@@ -3,11 +3,15 @@ import { getImageDatasetsByProject } from '@/lib/db/imageDatasets';
 import { getProjectPath } from '@/lib/db/base';
 import fs from 'fs/promises';
 import path from 'path';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 获取图片数据集列表
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get('page')) || 1;

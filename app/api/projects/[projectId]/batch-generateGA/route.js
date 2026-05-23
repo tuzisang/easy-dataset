@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { batchGenerateGaPairs } from '@/lib/services/ga/ga-pairs';
 import { getUploadFileInfoById } from '@/lib/db/upload-files'; // 导入单个文件查询函数
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * 批量生成多个文件的 GA 对
@@ -8,6 +9,9 @@ import { getUploadFileInfoById } from '@/lib/db/upload-files'; // 导入单个�
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const body = await request.json();
 
     if (!projectId) {

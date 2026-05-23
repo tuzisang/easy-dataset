@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * Get all evaluation dataset tags in the project
@@ -7,6 +8,9 @@ import { db } from '@/lib/db/index';
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // Fetch tags for all datasets in the project
     const datasets = await db.evalDatasets.findMany({

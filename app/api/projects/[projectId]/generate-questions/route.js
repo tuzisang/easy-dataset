@@ -3,11 +3,15 @@ import { getProjectChunks } from '@/lib/file/text-splitter';
 import { getTaskConfig } from '@/lib/db/projects';
 import { getChunkById } from '@/lib/db/chunks';
 import { generateQuestionsForChunk, generateQuestionsForChunkWithGA } from '@/lib/services/questions';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 批量生成问题
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证项目ID
     if (!projectId) {

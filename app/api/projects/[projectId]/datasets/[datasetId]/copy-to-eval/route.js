@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireProjectAccess } from '@/lib/auth';
 
 export async function POST(req, { params }) {
   try {
     const { projectId, datasetId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 1. 获取数据集详情
     const dataset = await db.datasets.findUnique({

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { buildEvalQuestionWhere } from '@/lib/db/evalDatasets';
+import { requireProjectAccess } from '@/lib/auth';
 
 const SMALL_TOTAL_THRESHOLD = 5000;
 const HARD_LIMIT = 50000;
@@ -17,6 +18,9 @@ function shuffleArray(arr) {
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const body = await request.json();
 
     const {

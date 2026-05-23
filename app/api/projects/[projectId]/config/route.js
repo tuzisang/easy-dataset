@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getProject, updateProject, getTaskConfig } from '@/lib/db/projects';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 获取项目配置
 export async function GET(request, { params }) {
   try {
     const projectId = params.projectId;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const config = await getProject(projectId);
     const taskConfig = await getTaskConfig(projectId);
     return NextResponse.json({ ...config, ...taskConfig });
@@ -18,6 +22,9 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const projectId = params.projectId;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const newConfig = await request.json();
     const currentConfig = await getProject(projectId);
 

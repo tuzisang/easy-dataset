@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { getImageDatasetsTagsByProject } from '@/lib/db/imageDatasets';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 获取项目中所有已使用的标签
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 获取项目的所有数据集
     const datasets = await getImageDatasetsTagsByProject(projectId);

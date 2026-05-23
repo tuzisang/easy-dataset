@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { distillQuestionsPrompt } from '@/lib/llm/prompts/distillQuestions';
 import { db } from '@/lib/db';
+import { requireProjectAccess } from '@/lib/auth';
 
 const LLMClient = require('@/lib/llm/core');
 
@@ -10,6 +11,9 @@ const LLMClient = require('@/lib/llm/core');
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证项目ID
     if (!projectId) {

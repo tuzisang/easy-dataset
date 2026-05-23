@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * Get blind-test task details
@@ -8,6 +9,9 @@ import { db } from '@/lib/db/index';
 export async function GET(request, { params }) {
   try {
     const { projectId, taskId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     const task = await db.task.findFirst({
       where: {
@@ -103,6 +107,9 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const { projectId, taskId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { action } = await request.json();
 
     const task = await db.task.findFirst({
@@ -153,6 +160,9 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { projectId, taskId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     const task = await db.task.findFirst({
       where: {

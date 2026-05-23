@@ -3,11 +3,15 @@ import { splitProjectFile, getProjectChunks } from '@/lib/file/text-splitter';
 import { getProject, updateProject } from '@/lib/db/projects';
 import { getTags } from '@/lib/db/tags';
 import { handleDomainTree } from '@/lib/util/domain-tree';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 处理文本分割请求
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 获取请求体
     const { fileNames, model, language, domainTreeAction = 'rebuild' } = await request.json();
@@ -63,6 +67,9 @@ export async function POST(request, { params }) {
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
     const filter = searchParams.get('filter');
     // 验证项目ID

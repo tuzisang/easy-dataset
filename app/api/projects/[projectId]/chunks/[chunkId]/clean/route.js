@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import logger from '@/lib/util/logger';
 import cleanService from '@/lib/services/clean';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 为指定文本块进行数据清洗
 export async function POST(request, { params }) {
   try {
     const { projectId, chunkId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证项目ID和文本块ID
     if (!projectId || !chunkId) {

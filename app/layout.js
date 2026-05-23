@@ -1,6 +1,7 @@
 import './globals.css';
 import ThemeRegistry from '@/components/ThemeRegistry';
 import I18nProvider from '@/components/I18nProvider';
+import AuthWrapper from '@/components/AuthWrapper';
 import { Toaster } from 'sonner';
 import { Provider } from 'jotai';
 
@@ -19,8 +20,10 @@ export default function RootLayout({ children }) {
         <Provider>
           <ThemeRegistry>
             <I18nProvider>
-              {children}
-              <Toaster richColors position="top-right" duration={1000} />
+              <AuthWrapper>
+                {children}
+                <Toaster richColors position="top-right" duration={1000} />
+              </AuthWrapper>
             </I18nProvider>
           </ThemeRegistry>
         </Provider>

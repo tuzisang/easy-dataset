@@ -7,6 +7,7 @@ import { handleDomainTree } from '@/lib/util/domain-tree';
 import path from 'path';
 import { getProjectRoot } from '@/lib/db/base';
 import { promises as fs } from 'fs';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * 批量删除文件
@@ -15,6 +16,9 @@ import { promises as fs } from 'fs';
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const body = await request.json();
 
     if (!projectId) {

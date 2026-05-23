@@ -13,6 +13,7 @@ import { getFileMD5 } from '@/lib/util/file';
 import { batchSaveTags } from '@/lib/db/tags';
 import { getProjectChunks, getProjectTocByName } from '@/lib/file/text-splitter';
 import { handleDomainTree } from '@/lib/util/domain-tree';
+import { requireProjectAccess } from '@/lib/auth';
 
 // Replace the deprecated config export with the new export syntax
 export const dynamic = 'force-dynamic';
@@ -23,6 +24,9 @@ export const bodyParser = false;
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证项目ID
     if (!projectId) {
@@ -54,6 +58,9 @@ export async function GET(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
     const fileId = searchParams.get('fileId');
     const domainTreeAction = searchParams.get('domainTreeAction') || 'keep';

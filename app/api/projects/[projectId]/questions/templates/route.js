@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import templateDb from '@/lib/db/questionTemplates';
 import { generateQuestionsFromTemplate, checkTemplateGenerationAvailability } from '@/lib/services/questions/template';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 获取问题模板列表
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
     const sourceType = searchParams.get('sourceType');
     const search = searchParams.get('search');
@@ -36,6 +40,9 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const data = await request.json();
 
     const { question, sourceType, answerType, description, labels, customFormat, order, autoGenerate } = data;

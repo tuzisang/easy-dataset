@@ -1,9 +1,14 @@
 // 获取项目详情
 import { deleteProject, getProject, updateProject, getTaskConfig } from '@/lib/db/projects';
+import { requireProjectAccess } from '@/lib/auth';
 
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return Response.json({ error: authErr.error }, { status: authErr.status });
+
     const project = await getProject(projectId);
     const taskConfig = await getTaskConfig(projectId);
     if (!project) {
@@ -20,6 +25,10 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return Response.json({ error: authErr.error }, { status: authErr.status });
+
     const projectData = await request.json();
 
     const hasNameField = Object.prototype.hasOwnProperty.call(projectData, 'name');
@@ -51,6 +60,10 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'owner');
+    if (authErr) return Response.json({ error: authErr.error }, { status: authErr.status });
+
     const success = await deleteProject(projectId);
 
     if (!success) {

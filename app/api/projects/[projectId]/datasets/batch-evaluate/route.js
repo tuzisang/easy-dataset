@@ -6,6 +6,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
 import { processTask } from '@/lib/services/tasks/index';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * 创建批量数据集评估任务
@@ -13,6 +14,9 @@ import { processTask } from '@/lib/services/tasks/index';
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { model, language = 'zh-CN' } = await request.json();
 
     if (!projectId) {

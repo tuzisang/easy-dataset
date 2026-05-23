@@ -3,10 +3,14 @@ import { getDatasetsById } from '@/lib/db/datasets';
 import LLMClient from '@/lib/llm/core/index';
 import { getEvalQuestionPrompt } from '@/lib/llm/prompts/evalQuestion';
 import { extractJsonFromLLMOutput } from '@/lib/llm/common/util';
+import { requireProjectAccess } from '@/lib/auth';
 
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { datasetId, model, language, questionType = 'open_ended', count = 1 } = await request.json();
 
     if (!datasetId || !model) {

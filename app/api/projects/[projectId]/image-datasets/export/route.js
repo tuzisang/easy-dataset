@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getImageDatasetsForExport } from '@/lib/db/imageDatasets';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * 导出图像数据集
@@ -7,6 +8,9 @@ import { getImageDatasetsForExport } from '@/lib/db/imageDatasets';
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const body = await request.json();
 
     // 验证项目ID

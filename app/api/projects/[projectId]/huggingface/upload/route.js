@@ -5,11 +5,15 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import { uploadFiles, createRepo, checkRepoAccess } from '@huggingface/hub';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 上传数据集到 HuggingFace
 export async function POST(request, { params }) {
   try {
     const projectId = params.projectId;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const {
       token,
       datasetName,

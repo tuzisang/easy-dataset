@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { deleteChunkById, getChunkById, updateChunkById } from '@/lib/db/chunks';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 获取文本块内容
 export async function GET(request, { params }) {
   try {
     const { projectId, chunkId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     // 验证参数
     if (!projectId) {
       return NextResponse.json({ error: 'Project ID cannot be empty' }, { status: 400 });
@@ -26,6 +30,9 @@ export async function GET(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { projectId, chunkId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     // 验证参数
     if (!projectId) {
       return NextResponse.json({ error: 'Project ID cannot be empty' }, { status: 400 });
@@ -46,6 +53,9 @@ export async function DELETE(request, { params }) {
 export async function PATCH(request, { params }) {
   try {
     const { projectId, chunkId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证参数
     if (!projectId) {

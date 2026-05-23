@@ -4,6 +4,7 @@ import { getUploadFileInfoById } from '@/lib/db/upload-files';
 import { generateGaPairs } from '@/lib/services/ga/ga-generation';
 import logger from '@/lib/util/logger';
 import { db } from '@/lib/db/index';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * 生成文件的 GA 对
@@ -11,6 +12,9 @@ import { db } from '@/lib/db/index';
 export async function POST(request, { params }) {
   try {
     const { projectId, fileId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { regenerate = false, appendMode = false, language = '中文' } = await request.json();
 
     // 验证参数
@@ -180,6 +184,9 @@ export async function GET(request, { params }) {
   try {
     const { projectId, fileId } = params;
 
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
+
     if (!projectId || !fileId) {
       return NextResponse.json({ error: 'Project ID and File ID are required' }, { status: 400 });
     }
@@ -202,6 +209,9 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const { projectId, fileId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const body = await request.json();
 
     if (!projectId || !fileId) {
@@ -271,6 +281,9 @@ export async function PUT(request, { params }) {
 export async function PATCH(request, { params }) {
   try {
     const { projectId, fileId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const body = await request.json();
 
     if (!projectId || !fileId) {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * 根据标签ID获取问题列表
@@ -7,6 +8,9 @@ import { db } from '@/lib/db';
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
     const tagId = searchParams.get('tagId');
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getEvalQuestionById, updateEvalQuestion, deleteEvalQuestion } from '@/lib/db/evalDatasets';
 import { db } from '@/lib/db/index';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * Get evaluation dataset details by ID
@@ -9,6 +10,9 @@ import { db } from '@/lib/db/index';
 export async function GET(request, { params }) {
   try {
     const { projectId, evalId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
     const operateType = searchParams.get('operateType');
 
@@ -69,6 +73,9 @@ export async function GET(request, { params }) {
  */
 export async function PUT(request, { params }) {
   try {
+    const { projectId } = params;
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { evalId } = params;
     const data = await request.json();
 
@@ -96,6 +103,9 @@ export async function PUT(request, { params }) {
  */
 export async function DELETE(request, { params }) {
   try {
+    const { projectId } = params;
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { evalId } = params;
 
     await deleteEvalQuestion(evalId);

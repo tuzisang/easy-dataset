@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { requireProjectAccess } from '@/lib/auth';
 import {
   getCustomPrompts,
   getCustomPrompt,
@@ -13,6 +14,9 @@ import {
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
     const promptType = searchParams.get('promptType');
     const language = searchParams.get('language');
@@ -39,6 +43,9 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const body = await request.json();
 
     if (!projectId) {
@@ -80,6 +87,9 @@ export async function POST(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
     const promptType = searchParams.get('promptType');
     const promptKey = searchParams.get('promptKey');

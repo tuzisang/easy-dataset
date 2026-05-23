@@ -1,9 +1,13 @@
 import { NextResponse } from 'next/server';
 import { batchDeleteQuestions } from '@/lib/db/questions';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 批量删除问题
 export async function DELETE(request) {
   try {
+    const { projectId } = params;
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const body = await request.json();
     const { questionIds } = body;
 

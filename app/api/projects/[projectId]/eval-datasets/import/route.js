@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
 import { nanoid } from 'nanoid';
 import * as XLSX from 'xlsx';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * Validate true/false item schema
@@ -234,6 +235,9 @@ function parseJSON(content) {
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const formData = await request.formData();
 
     const file = formData.get('file');

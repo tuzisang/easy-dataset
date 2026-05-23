@@ -3,6 +3,7 @@ import { saveChunks, deleteChunksByFileId } from '@/lib/db/chunks';
 import path from 'path';
 import fs from 'fs/promises';
 import { getProjectRoot } from '@/lib/db/base';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * 处理自定义分块请求
@@ -13,6 +14,9 @@ import { getProjectRoot } from '@/lib/db/base';
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { fileId, fileName, content, splitPoints } = await request.json();
 
     // 参数验证

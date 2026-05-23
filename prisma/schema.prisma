@@ -36,6 +36,7 @@ model Projects {
   ImageDatasets        ImageDatasets[]
   QuestionTemplates    QuestionTemplates[]
   EvalDatasets         EvalDatasets[]
+  ProjectAccess        ProjectAccess[]
 }
 
 model UploadFiles {
@@ -403,4 +404,29 @@ model EvalResults {
   @@index([projectId])
   @@index([taskId])
   @@index([evalDatasetId])
+}
+
+model User {
+  id       String   @id @default(nanoid())
+  username String   @unique
+  password String
+  role     String   @default("member") // "admin" | "member"
+  createAt DateTime @default(now())
+
+  projectAccess ProjectAccess[]
+}
+
+model ProjectAccess {
+  id        String   @id @default(nanoid())
+  userId    String
+  projectId String
+  role      String   @default("viewer") // "owner" | "editor" | "viewer"
+  createAt  DateTime @default(now())
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Projects @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, projectId])
+  @@index([userId])
+  @@index([projectId])
 }

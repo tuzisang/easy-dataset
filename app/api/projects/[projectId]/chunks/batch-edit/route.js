@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { requireProjectAccess } from '@/lib/auth';
 
 const prisma = new PrismaClient();
 
@@ -10,6 +11,9 @@ const prisma = new PrismaClient();
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const body = await request.json();
     const { position, content, chunkIds } = body;
 

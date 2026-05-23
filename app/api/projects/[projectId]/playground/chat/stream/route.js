@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import LLMClient from '@/lib/llm/core/index';
 import { getModelConfigById } from '@/lib/db/model-config';
+import { requireProjectAccess } from '@/lib/auth';
 
 async function resolveLatestModelConfig(projectId, incomingModel = {}) {
   const modelId = incomingModel?.id;
@@ -34,6 +35,9 @@ export async function POST(request, { params }) {
   const { projectId } = params;
 
   try {
+    const { projectId } = params;
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const body = await request.json();
     const { model, messages } = body;
     const resolvedModel = await resolveLatestModelConfig(projectId, model);

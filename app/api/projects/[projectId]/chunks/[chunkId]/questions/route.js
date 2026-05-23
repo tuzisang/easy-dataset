@@ -2,11 +2,15 @@ import { NextResponse } from 'next/server';
 import { getQuestionsForChunk } from '@/lib/db/questions';
 import logger from '@/lib/util/logger';
 import questionService from '@/lib/services/questions';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 为指定文本块生成问题
 export async function POST(request, { params }) {
   try {
     const { projectId, chunkId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证项目ID和文本块ID
     if (!projectId || !chunkId) {
@@ -51,6 +55,9 @@ export async function POST(request, { params }) {
 export async function GET(request, { params }) {
   try {
     const { projectId, chunkId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证项目ID和文本块ID
     if (!projectId || !chunkId) {

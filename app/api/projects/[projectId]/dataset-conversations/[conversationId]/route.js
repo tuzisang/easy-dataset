@@ -3,6 +3,7 @@
  */
 
 import { NextResponse } from 'next/server';
+import { requireProjectAccess } from '@/lib/auth';
 import {
   getDatasetConversationById,
   updateDatasetConversation,
@@ -16,6 +17,9 @@ import {
 export async function GET(request, { params }) {
   try {
     const { projectId, conversationId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
     const operateType = searchParams.get('operateType');
 
@@ -66,6 +70,9 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const { projectId, conversationId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const body = await request.json();
 
     // 验证对话数据集是否存在且属于项目
@@ -140,6 +147,9 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { projectId, conversationId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证对话数据集是否存在且属于项目
     const conversation = await getDatasetConversationById(conversationId);

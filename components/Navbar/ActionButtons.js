@@ -12,6 +12,7 @@ import LanguageSwitcher from '../LanguageSwitcher';
 import UpdateChecker from '../UpdateChecker';
 import TaskIcon from '../TaskIcon';
 import ModelSelect from '../ModelSelect';
+import UserMenu from './UserMenu';
 import * as styles from './styles';
 
 /**
@@ -107,6 +108,9 @@ export default function ActionButtons({
       <Box sx={{ display: { xs: 'none', xl: 'flex' } }}>
         <UpdateChecker />
       </Box>
+
+      {/* User Menu - Always visible */}
+      <UserMenu theme={theme} />
     </Box>
   );
 }

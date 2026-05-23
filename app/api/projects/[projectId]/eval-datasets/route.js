@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getEvalQuestionsWithPagination, getEvalQuestionsStats, deleteEvalQuestion } from '@/lib/db/evalDatasets';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * Get project's evaluation dataset list (paginated)
@@ -7,6 +8,10 @@ import { getEvalQuestionsWithPagination, getEvalQuestionsStats, deleteEvalQuesti
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
+
     const { searchParams } = new URL(request.url);
 
     // Parse query params
@@ -58,6 +63,11 @@ export async function GET(request, { params }) {
  */
 export async function DELETE(request, { params }) {
   try {
+    const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
+
     const { ids } = await request.json();
 
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
@@ -86,6 +96,10 @@ export async function DELETE(request, { params }) {
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
+
     const body = await request.json();
 
     const { createEvalQuestion, createManyEvalQuestions } = require('@/lib/db/evalDatasets');

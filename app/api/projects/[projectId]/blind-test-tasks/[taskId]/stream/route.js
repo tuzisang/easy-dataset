@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
 import LLMClient from '@/lib/llm/core/index';
 import { getModelConfigById } from '@/lib/db/model-config';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * Stream answers from two models for the current question
@@ -10,6 +11,9 @@ export async function GET(request, { params }) {
   const { projectId, taskId } = params;
 
   try {
+    const { projectId } = params;
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     if (!projectId || !taskId) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }

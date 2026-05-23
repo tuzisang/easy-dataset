@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { requireProjectAccess } from '@/lib/auth';
 
 const prisma = new PrismaClient();
 
@@ -7,6 +8,9 @@ const prisma = new PrismaClient();
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
 
     // 可选参数: 任务类型和任务状态

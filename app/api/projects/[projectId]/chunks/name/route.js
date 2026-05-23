@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getChunkByName } from '@/lib/db/chunks';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * 根据文本块名称获取文本块
@@ -10,6 +11,9 @@ import { getChunkByName } from '@/lib/db/chunks';
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 从查询参数中获取 chunkName
     const { searchParams } = new URL(request.url);

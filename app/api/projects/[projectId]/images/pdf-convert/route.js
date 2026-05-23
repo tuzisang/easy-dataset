@@ -4,6 +4,7 @@ import { importImagesFromDirectories } from '@/lib/services/images';
 import fs from 'fs/promises';
 import path from 'path';
 import { savePdfAsImages } from '@/lib/util/file';
+import { requireProjectAccess } from '@/lib/auth';
 
 // PDF 转图片并导入
 export async function POST(request, { params }) {
@@ -12,6 +13,9 @@ export async function POST(request, { params }) {
 
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const formData = await request.formData();
     const pdfFile = formData.get('file');
 

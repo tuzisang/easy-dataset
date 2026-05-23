@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
 import { getEvalResultsByTaskId, getEvalResultsStats } from '@/lib/db/evalResults';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * Get evaluation task details and results
@@ -8,6 +9,9 @@ import { getEvalResultsByTaskId, getEvalResultsStats } from '@/lib/db/evalResult
 export async function GET(request, { params }) {
   try {
     const { projectId, taskId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     if (!projectId || !taskId) {
       return NextResponse.json({ error: 'Project ID and Task ID are required' }, { status: 400 });
@@ -86,6 +90,9 @@ export async function DELETE(request, { params }) {
   try {
     const { projectId, taskId } = params;
 
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
+
     if (!projectId || !taskId) {
       return NextResponse.json({ error: 'Project ID and Task ID are required' }, { status: 400 });
     }
@@ -132,6 +139,9 @@ export async function DELETE(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const { projectId, taskId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const data = await request.json();
     const { action } = data;
 

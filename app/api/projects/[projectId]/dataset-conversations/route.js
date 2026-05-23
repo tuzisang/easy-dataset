@@ -9,6 +9,7 @@ import {
   createDatasetConversation
 } from '@/lib/db/dataset-conversations';
 import { generateMultiTurnConversation } from '@/lib/services/multi-turn/index';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * 获取多轮对话数据集列表（支持分页和筛选）
@@ -16,6 +17,9 @@ import { generateMultiTurnConversation } from '@/lib/services/multi-turn/index';
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
 
     const getAllIds = searchParams.get('getAllIds') === 'true'; // 新增：获取所有对话ID的标志
@@ -70,6 +74,9 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const body = await request.json();
 
     const { questionId, systemPrompt, scenario, rounds, roleA, roleB, model, language = '中文' } = body;

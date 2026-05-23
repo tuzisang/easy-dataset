@@ -1,11 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getImageByName } from '@/lib/db/images';
 import imageService from '@/lib/services/images';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 生成图像数据集
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { imageName, question, model, language = 'zh', previewOnly = false } = await request.json();
 
     if (!imageName || !question) {

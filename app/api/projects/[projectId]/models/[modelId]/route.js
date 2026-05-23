@@ -2,10 +2,14 @@ import { NextResponse } from 'next/server';
 import { getProjectRoot } from '@/lib/db/base';
 import path from 'path';
 import fs from 'fs/promises';
+import { requireProjectAccess } from '@/lib/auth';
 
 export async function GET(request, { params }) {
   try {
     const { projectId, modelId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证项目ID和模型ID
     if (!projectId || !modelId) {
@@ -54,6 +58,9 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const { projectId, modelId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证项目ID和模型ID
     if (!projectId || !modelId) {
@@ -122,6 +129,9 @@ export async function PUT(request, { params }) {
 export async function DELETE(request, { params }) {
   try {
     const { projectId, modelId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证项目ID和模型ID
     if (!projectId || !modelId) {

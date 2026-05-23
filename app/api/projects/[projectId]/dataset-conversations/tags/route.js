@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getAllDatasetConversations } from '@/lib/db/dataset-conversations';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * 获取项目中多轮对话数据集的所有标签
@@ -7,6 +8,9 @@ import { getAllDatasetConversations } from '@/lib/db/dataset-conversations';
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     if (!projectId) {
       return NextResponse.json({ error: '项目ID不能为空' }, { status: 400 });

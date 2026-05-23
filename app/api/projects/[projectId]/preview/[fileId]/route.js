@@ -3,11 +3,15 @@ import fs from 'fs';
 import path from 'path';
 import { getProjectRoot } from '@/lib/db/base';
 import { getUploadFileInfoById } from '@/lib/db/upload-files';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 获取文件内容
 export async function GET(request, { params }) {
   try {
     const { projectId, fileId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证参数
     if (!projectId) {

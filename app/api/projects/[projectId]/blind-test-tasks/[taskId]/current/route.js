@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
 import LLMClient from '@/lib/llm/core/index';
 import { getModelConfigById } from '@/lib/db/model-config';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * Get current question and generate answers from two models
@@ -9,6 +10,9 @@ import { getModelConfigById } from '@/lib/db/model-config';
 export async function GET(request, { params }) {
   try {
     const { projectId, taskId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     const task = await db.task.findFirst({
       where: {

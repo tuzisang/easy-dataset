@@ -4,6 +4,7 @@ import archiver from 'archiver';
 import { getProjectPath } from '@/lib/db/base';
 import path from 'path';
 import fs from 'fs';
+import { requireProjectAccess } from '@/lib/auth';
 
 /**
  * 导出图片文件压缩包
@@ -11,6 +12,9 @@ import fs from 'fs';
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
     const confirmedOnly = searchParams.get('confirmedOnly') === 'true';
 

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/index';
 import { buildEvalQuestionWhere } from '@/lib/db/evalDatasets';
+import { requireProjectAccess } from '@/lib/auth';
 
 const BATCH_SIZE = 500;
 
@@ -51,6 +52,9 @@ function formatExportItem(item) {
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const body = await request.json();
 
     const {
@@ -200,6 +204,9 @@ export async function POST(request, { params }) {
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { searchParams } = new URL(request.url);
 
     // Parse query params

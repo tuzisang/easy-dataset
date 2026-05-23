@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { createDataset } from '@/lib/db/datasets';
 import { nanoid } from 'nanoid';
+import { requireProjectAccess } from '@/lib/auth';
 
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { datasets, sourceInfo } = await request.json();
 
     if (!datasets || !Array.isArray(datasets)) {

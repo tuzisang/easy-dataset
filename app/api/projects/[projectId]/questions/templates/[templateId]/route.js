@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import templateDb from '@/lib/db/questionTemplates';
 import { generateQuestionsFromTemplateEdit } from '@/lib/services/questions/template';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 获取单个模板
 export async function GET(request, { params }) {
@@ -33,6 +34,9 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const { projectId, templateId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const data = await request.json();
 
     const { question, sourceType, answerType, description, labels, customFormat, order, autoGenerate } = data;
@@ -89,6 +93,9 @@ export async function PUT(request, { params }) {
 // 删除问题模板
 export async function DELETE(request, { params }) {
   try {
+    const { projectId } = params;
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const { templateId } = params;
 
     // 检查是否有关联的问题

@@ -7,11 +7,16 @@ import {
   updateQuestion
 } from '@/lib/db/questions';
 import { getImageById, getImageChunk } from '@/lib/db/images';
+import { requireProjectAccess } from '@/lib/auth';
 
 // 获取项目的所有问题
 export async function GET(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
+
     // 验证项目ID
     if (!projectId) {
       return NextResponse.json({ error: 'Missing project ID' }, { status: 400 });
@@ -64,6 +69,10 @@ export async function GET(request, { params }) {
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
+
     const body = await request.json();
     const { question, chunkId, label } = body;
 
@@ -92,8 +101,13 @@ export async function POST(request, { params }) {
 }
 
 // 更新问题
-export async function PUT(request) {
+export async function PUT(request, { params }) {
   try {
+    const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
+
     const body = await request.json();
     // 保存更新后的数据
     const { imageId } = body;

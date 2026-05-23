@@ -5,6 +5,7 @@ import { getProjectRoot } from '@/lib/db/base';
 import { getTaskConfig } from '@/lib/db/projects';
 import { processTask } from '@/lib/services/tasks';
 import { db } from '@/lib/db/index';
+import { requireProjectAccess } from '@/lib/auth';
 
 function normalizeModelEndpoint(endpoint = '') {
   let normalizedEndpoint = String(endpoint).trim();
@@ -40,6 +41,9 @@ export async function GET(request, { params }) {
   try {
     const { projectId } = params;
 
+    const authErr = await requireProjectAccess(request, projectId, 'viewer');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
+
     // 验证项目 ID
     if (!projectId) {
       return NextResponse.json({ error: 'Project ID is required' }, { status: 400 });
@@ -68,6 +72,9 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
 
     // 验证项目 ID
     if (!projectId) {
@@ -110,6 +117,9 @@ export async function PUT(request, { params }) {
 export async function POST(request, { params }) {
   try {
     const { projectId } = params;
+
+    const authErr = await requireProjectAccess(request, projectId, 'editor');
+    if (authErr) return NextResponse.json({ error: authErr.error }, { status: authErr.status });
     const data = await request.json();
 
     // 验证必填字段
